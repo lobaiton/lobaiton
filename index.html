@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>TUG Tool | Affinitizer</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="modernizr.custom.js"></script>
+    <style>
+        table { page-break-inside:auto }
+        tr {
+          width:100%;
+          page-break-inside:avoid; 
+          page-break-after:auto;
+        }
+
+        td {
+          height:1.75in;
+          padding:.25in;
+          font-size:12pt;
+          page-break-inside:avoid; 
+          page-break-after:auto;
+        }
+
+        .page {
+          page-break-after: always
+        }
+
+        @media print {    
+        .no-print, .no-print *
+        {
+          display: none !important;
+        }
+}
+    </style>
+</head>
+
+<input type="file" id="fileinput" class='no-print'/>
+<div id="dynamicTable"></div>
+
+
+
+<script>
+  function readSingleFile(evt) {
+    //Retrieve the first (and only!) File from the FileList object
+    var f = evt.target.files[0]; 
+
+    if (f) {
+      var r = new FileReader();
+      //var displayArea = document.getElementById('fileDisplayArea');
+      r.onload = function(e) { 
+	      var contents = e.target.result;
+        alert( "Got the file.\n\n" 
+              +"name: " + f.name + "\n\n"
+              +"type: " + f.type + "\n\n"
+              +"size: " + f.size + " bytes"
+        );
+//Problem with FileReader() function, it is reading in entire file and ignoring \n, concatenating rows together.
+
+        //Read through csv, then split at cells and store in array. Loop through array and concatenate next 3 strings. If 4th string starts with 'u##', then start next array item, else add 4th string and then start next array item.
+        var data = r.result.split('^');        
+        var line = null;
+        var cellData = null;
+        var arrayLength = data.length;
+        var rowCount = Math.ceil(arrayLength/2);      
+        
+        //Create Table
+        var myTableDiv = document.getElementById("dynamicTable");
+        var table = document.createElement("table");
+        table.style.width = '100%';
+        table.setAttribute('border', '1');
+        var tableBody = document.createElement("tbody");
+        table.appendChild(tableBody); 
+        var row = null;
+        var count = 0;
+        var pageBreaker = 0;
+        
+
+        //Create rows and columns. Add data from cellData array into table cells.
+        for (var j=0; j<rowCount; j++) {
+          row = table.insertRow(j);
+          pageBreaker++;
+          if (pageBreaker == 4){
+            alert('entered if');
+            var page = document.createElement('div');
+            page.className = 'page';
+            pageBreaker = 0;
+          }
+
+        //FOR Loop creates 2 columns and inserts data
+          for (var k=0; k<2; k++) {
+              var td = document.createElement('td');
+              cellData = data[count].split(',').join("<br/>");
+              td.innerHTML = cellData;
+              count++;
+              row.appendChild(td);
+          }
+        }
+        myTableDiv.appendChild(table);
+      }
+      r.readAsText(f);
+
+    } else { 
+      alert("Failed to load file");
+    }
+  }
+
+
+  document.getElementById('fileinput').addEventListener('change', readSingleFile, false);
+
+</script>
+
+</html>
